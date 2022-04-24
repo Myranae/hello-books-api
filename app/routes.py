@@ -21,11 +21,11 @@ def validate_book(book_id):
     try:
         book_id = int(book_id)
     except ValueError:
-        abort(make_response({"message":f"book id {book_id} is invalid"}, 400))
+        abort(make_response({"message":f"book id '{book_id}' is invalid"}, 400))
     for book in books:
         if book.id == book_id:
             return book
-    abort(make_response({"message":"book {book_id} not found"}, 404))
+    abort(make_response({"message":f"book {book_id} not found"}, 404))
 
 @books_bp.route("", methods=["GET"])
 def all_books():
