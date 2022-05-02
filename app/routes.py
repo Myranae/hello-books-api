@@ -5,6 +5,23 @@ from app.models.book import Book
 
 books_bp = Blueprint("books", __name__, url_prefix="/books")
 
+# HELPER FUNCTIONS
+# validate book data is correct
+def validate_book(book_id):
+    # handle non-int input for book_id
+    try:
+        book_id = int(book_id)
+    except ValueError:
+        abort(make_response({"message":f"book id '{book_id}' is invalid"}, 400))
+
+    # handle no entry for book_id requested
+    book = Book.query.get(book_id)
+    if not book:
+        abort(make_response({"message":f"book {book_id} not found"}, 404))
+    return book
+
+# ROUTES
+# create one book
 @books_bp.route("", methods=["POST"])
 def create_book():
     request_body = request.get_json()
@@ -18,6 +35,7 @@ def create_book():
     db.session.commit()
     return f"Book '{new_book.title}' created", 201
 
+# get all books
 @books_bp.route("", methods=["GET"])
 def read_all_books():
     books = Book.query.all()
@@ -32,19 +50,9 @@ def read_all_books():
         )
     return jsonify(books_response), 200 
 
-def validate_book(book_id):
-    books = Book.query.all()
-    try:
-        book_id = int(book_id)
-    except ValueError:
-        abort(make_response({"message":f"book id '{book_id}' is invalid"}, 400))
-    for book in books:
-        if book.id == book_id:
-            return book
-    abort(make_response({"message":f"book {book_id} not found"}, 404))
-
+# get a single book
 @books_bp.route("/<book_id>", methods=["GET"])
-def get_book(book_id):
+def read_one_book(book_id):
     book = validate_book(book_id)
     return {
                 "id": book.id,
@@ -52,61 +60,14 @@ def get_book(book_id):
                 "description": book.description,
             }
 
+@books_bp.route("/<book_id>", methods=["PUT"])
+def update_book(book_id):
+    book = validate_book(book_id)
 
+    request_body = request.get_json()
 
-# def validate_book(book_id):
-#     try:
-#         book_id = int(book_id)
-#     except ValueError:
-#         abort(make_response({"message":f"book id '{book_id}' is invalid"}, 400))
-#     for book in books:
-#         if book.id == book_id:
-#             return book
-#     abort(make_response({"message":f"book {book_id} not found"}, 404))
+    book.title = request_body["title"]
+    book.description = request_body["description"]
 
-# @books_bp.route("", methods=["GET"])
-# def all_books():
-#     books_json = []
-#     for book in books:
-#         books_json.append(
-#             {
-#                 "id": book.id,
-#                 "title": book.title,
-#                 "description": book.description,
-#             }
-#         )
-#     return jsonify(books_json), 200 
-
-# @books_bp.route("/<book_id>", methods=["GET"])
-# def get_book(book_id):
-#     book = validate_book(book_id)
-#     return {
-#                 "id": book.id,
-#                 "title": book.title,
-#                 "description": book.description,
-#             }
-
-# @hello_world_bp.route("/hello-world", methods=["GET"])
-# def say_hello_world():
-#     return "Hello, World!"
-
-
-# @hello_world_bp.route("/hello/JSON", methods=["GET"])
-# def say_hello_json():
-#     return {
-#         "name": "Ada Lovelace",
-#         "message": "Hello!",
-#         "hobbies": ["Fishing", "Swimming", "Watching Reality Shows"]
-#     }
-
-
-# @hello_world_bp.route("/broken-endpoint-with-broken-server-code")
-# def broken_endpoint():
-#     response_body = {
-#         "name": "Ada Lovelace",
-#         "message": "Hello!",
-#         "hobbies": ["Fishing", "Swimming", "Watching Reality Shows"]
-#     }
-#     new_hobby = "Surfing"
-#     response_body["hobbies"].append(new_hobby)
-#     return response_body
+    db.session.commit()
+    return f"Book {book_id} successfully updated", 200
