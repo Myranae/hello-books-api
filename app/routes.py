@@ -79,6 +79,7 @@ def update_book(book_id):
 
     return f"Book {book_id} successfully updated", 200
 
+# delete one record
 @books_bp.route("/<book_id>", methods=["DELETE"])
 def delete_book(book_id):
     book = validate_book(book_id)
