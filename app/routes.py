@@ -1,4 +1,3 @@
-
 from flask import Blueprint, jsonify, abort, make_response, request
 from app import db
 from app.models.book import Book
@@ -38,7 +37,13 @@ def create_book():
 # get all books
 @books_bp.route("", methods=["GET"])
 def read_all_books():
-    books = Book.query.all()
+    title_query = request.args.get("title")
+
+    if title_query is not None:
+        books = Book.query.filter_by(title=title_query)
+    else:
+        books = Book.query.all()
+
     books_response = []
     for book in books:
         books_response.append(
@@ -60,6 +65,7 @@ def read_one_book(book_id):
                 "description": book.description,
             }
 
+# replace all the info of one record
 @books_bp.route("/<book_id>", methods=["PUT"])
 def update_book(book_id):
     book = validate_book(book_id)
@@ -70,4 +76,15 @@ def update_book(book_id):
     book.description = request_body["description"]
 
     db.session.commit()
+
     return f"Book {book_id} successfully updated", 200
+
+@books_bp.route("/<book_id>", methods=["DELETE"])
+def delete_book(book_id):
+    book = validate_book(book_id)
+
+    db.session.delete(book)
+
+    db.session.commit()
+
+    return f"Book {book_id} successfully deleted", 200
