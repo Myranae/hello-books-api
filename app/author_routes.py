@@ -37,6 +37,7 @@ def read_all_authors():
     for author in authors:
         authors_response.append(
             {
+                "id": author.id,
                 "name": author.name
             }
         )
@@ -64,6 +65,7 @@ def read_books(author_id):
 
     books_response = []
     for book in author.books:
+        # print(book)
         books_response.append(
             {
             "id": book.id,

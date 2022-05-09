@@ -43,7 +43,8 @@ def read_all_books():
             {
                 "id": book.id,
                 "title": book.title,
-                "description": book.description
+                "description": book.description,
+                # "author": book.author.name
             }
         )
     return jsonify(books_response)
@@ -54,7 +55,8 @@ def read_one_book(book_id):
     return {
             "id": book.id,
             "title": book.title,
-            "description": book.description
+            "description": book.description,
+            # "author": book.author.name
         }
 
 @books_bp.route("/<book_id>", methods=["PUT"])
