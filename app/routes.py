@@ -113,3 +113,47 @@ def create_author():
     db.session.commit()
 
     return make_response(jsonify(f"Author {new_author.name} successfully created"), 201)
+
+def validate_author(author_id):
+    try:
+        author_id = int(author_id)
+    except ValueError:
+        abort(make_response({"message": f"author {author_id} invalid"}, 400))
+
+    author = Author.query.get(author_id)
+
+    if not author:
+        abort(make_response({"message": f"author {author_id} not found"}, 404))
+
+    return author
+
+@authors_bp.route("/<author_id>/books", methods=["POST"])
+def create_book(author_id):
+    request_body = request.get_json()
+    new_book_author = validate_author(author_id)
+
+    new_book = Book(title=request_body["title"], 
+        description=request_body["description"], author=new_book_author)
+
+    db.session.add(new_book)
+    db.session.commit()
+
+    return make_response(jsonify(f"Book {new_book.name} successfully created"), 201)
+
+
+@authors_bp.route("/<author_id>/books", methods=["GET"])
+def read_all_books_by_author(author_id):
+    author = validate_author(author_id)
+    books = Book.query.filter_by(author_id=author.id)
+    # books = author.books
+    
+    books_response = []
+    for book in books:
+        books_response.append(
+            {
+                "id": book.id,
+                "title": book.title,
+                "description": book.description
+            }
+        )
+    return jsonify(books_response)
