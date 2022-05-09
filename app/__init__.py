@@ -28,7 +28,8 @@ def create_app(test_config=None):
     migrate.init_app(app, db)
 
     # Register Blueprints here
-    from .routes import books_bp
+    from .routes import books_bp, authors_bp
     app.register_blueprint(books_bp)
+    app.register_blueprint(authors_bp)
 
     return app
